@@ -18,16 +18,17 @@ with urllib.request.urlopen(url) as response:
 
 # Change to XYZ-coordinate system
 earth = 6371
-sat_sat = np.array([i.split(',')[1:] for i in data[2:-1]])
-sat_sat = sat_sat.astype(float)
-print(sat_sat)
-z = (earth+sat_sat[:,2]) * np.sin(sat_sat[:,0])
-z0_dis = (earth+sat_sat[:,2]) * np.cos(sat_sat[:,0])
-x = z0_dis * np.cos(sat_sat[:,1])
-y = z0_dis * np.sin(sat_sat[:,1])
+sat_loc = np.array([i.split(',')[1:] for i in data[2:-1]])
+print(sat_loc)
+sat_loc = sat_loc.astype(float)
+z = (earth+sat_loc[:,2]) * np.sin(sat_loc[:,0])
+z0_dis = (earth+sat_loc[:,2]) * np.cos(sat_loc[:,0])
+x = z0_dis * np.cos(sat_loc[:,1])
+y = z0_dis * np.sin(sat_loc[:,1])
 sat = np.hstack((x,y,z)).reshape(3,20).T
 
 # Satellite adjency matrix A
+A = np.zeros((20,20), dtype='int')
 for i in range(20):
     for j in range(20):
         if i != j:
@@ -40,10 +41,12 @@ for i in range(20):
 print(A)
 
 # finding starting satelites
+start = np.array(data[-1].split(',')[1:3]).astype(float)
 
 
 
 # finding ending satelites
+end = np.array(data[-1].split(',')[3:]).astype(float)
 
 
 
