@@ -11,23 +11,36 @@ import math
 import urllib.request
 
 
+earth = 6371
+
+
 # Getting data
 url = "https://space-fast-track.herokuapp.com/generate"
 with urllib.request.urlopen(url) as response:
     data = response.read().decode().split()
 
+
+# Extracting location data
+location = np.array([i.split(',')[1:] for i in data[2:-1]])
+start = np.append(data[-1].split(',')[1:3], ['0'])
+end = np.append(data[-1].split(',')[3:], ['0'])
+location = np.vstack((location, start, end))
+location = location.astype(float)
+
+print(location)
+
+# Change alltitude to distance from the earth center
+location[:,2] = location[:,2] + earth
+
 # Change to XYZ-coordinate system
-earth = 6371
-sat_loc = np.array([i.split(',')[1:] for i in data[2:-1]])
-print(sat_loc)
-sat_loc = sat_loc.astype(float)
-z = (earth+sat_loc[:,2]) * np.sin(sat_loc[:,0])
-z0_dis = (earth+sat_loc[:,2]) * np.cos(sat_loc[:,0])
-x = z0_dis * np.cos(sat_loc[:,1])
-y = z0_dis * np.sin(sat_loc[:,1])
-sat = np.hstack((x,y,z)).reshape(3,20).T
+zplane = location[:,2] * np.cos(location[:,0])
+x = zplane * np.cos(location[:,1])
+y = zplane * np.sin(location[:,1])
+z = location[:,2] * np.sin(location[:,0])
+xyz_location = np.vstack((x,y,z)).T
 
 # Satellite adjency matrix A
+sat = xyz_location[:-2]
 A = np.zeros((20,20), dtype='int')
 for i in range(20):
     for j in range(20):
